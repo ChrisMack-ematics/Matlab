@@ -1,0 +1,57 @@
+v = VideoWriter('MembraneMovie734a.avi');
+v.Quality = 95;
+% colormap(summer(256));
+open(v);
+
+%Dimensions of the membrane
+L = 2;
+H = 3;
+% Number of spatial templates
+N = 5;
+M = 5;
+
+[X,Y] = meshgrid(0:0.05:L,0:0.05:H);
+
+p = 5.1;
+q = 5.1;
+
+tstep = 0.1;
+T = 15;
+k = 0.07;
+c = 0.5;
+
+for t = 0:tstep:T
+    for n = 1:N
+        for m = 1:M
+            lambda = (m*pi/L)^2 + (n*pi/L)^2;
+            cn = (4*L*p^2*sin((1/2)*n*pi)*sin((1/2)*n*pi/p))/(n*pi*(-n^2+4*p^2));
+            cm = (4*H*q^2*sin((1/2)*m*pi)*sin((1/2)*m*pi/q))/(m*pi*(-m^2+4*q^2));
+            A = cn*cm*pi^2/(L*H);
+            h = sin(c.*sqrt(lambda).*t);
+            U = A.*sin((n.*pi.*X)./L).*cos((m.*pi.*Y)./H).*h;       
+            if n == 1 && m == 1
+                Uf = U;
+            else
+                Uf = Uf + U;
+            end
+        end
+    end
+    U = Uf;
+    surf(X,Y,U)
+    title('Heat Diffusion 7.3.4(a) for $k=.07$ \& $c = 0.5$','interpreter','latex','FontSize',15)
+    xlabel('$x$','interpreter','latex','FontSize',15)
+    ylabel('$y$','interpreter','latex','FontSize',15)
+    zlabel('$u(x,y)$','interpreter','latex','FontSize',15)
+    xlim([0 L]);
+    ylim([0 H]);
+    zlim([-1 1]);
+    set(gcf);
+    grid on
+    colormap hot;
+    frame = getframe(gcf);
+    writeVideo(v,frame);
+    pause(.02)
+    U = 0;
+    Uf = 0;
+end
+close(v);
